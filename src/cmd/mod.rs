@@ -1,6 +1,11 @@
 // * this code will contain a basic code for parsing our args through the command line
 // * hint: use env::args() to build on top of
 
+use regex::Regex;
+use std::process;
+
+use crate::core::file_content_parsed;
+
 pub mod parser;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -34,11 +39,28 @@ impl Args {
 
     fn set_pattern(&mut self, pattern: String) -> Self {
         self.pattern = pattern;
+        self.validate_pattern();
         self.clone()
     }
 
     fn set_file(&mut self, file: Option<String>) -> Self {
         self.file = file;
         self.clone()
+    }
+
+    fn validate_pattern(&self) {
+        // * validate if the regex pattern is valid or not
+        let regex = Regex::new(&self.pattern);
+        match regex {
+            Err(err) => {
+                println!("This is a bad regex to begin with {:#?}", err);
+                process::exit(1)
+            }
+            _ => {}
+        }
+    }
+
+    fn executer(&self) {
+        file_content_parsed(&self.file.clone().unwrap())
     }
 }

@@ -1,4 +1,3 @@
-
 mod count;
 mod insensitive;
 mod invert;

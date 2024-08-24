@@ -21,6 +21,8 @@ pub fn cmd_parser() -> Args {
     formatted_args.set_file(args.next());
 
     println!("the formatted args {:?}", formatted_args);
+
+    formatted_args.executer();
     formatted_args
 }
 
@@ -32,8 +34,8 @@ fn flag_transformer(option: Option<String>) -> Option<Flags> {
             "-v" => Some(Flags::Inverting),
             "-n" => Some(Flags::LineNum),
             _ => {
-              panic!("we don't support this {}", option)
-            },
+                panic!("we don't support this {}", option)
+            }
         }
     } else {
         None

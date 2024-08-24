@@ -1,42 +1,55 @@
-use std::{env, fs, path::{Path, PathBuf}};
+use std::{
+    env,
+    ffi::OsStr,
+    fs,
+};
 
 use ast::Tokenizer;
 use walkdir::WalkDir;
 
-pub mod ast;
 pub mod action;
+pub mod ast;
 
+fn search_file(file_name: &str) {
+    let workflow = env::current_dir().unwrap();
+    let arr = file_name.split(".").collect::<Vec<&str>>();
+    let mut current_entries = WalkDir::new(&workflow)
+        .into_iter()
+        .filter_map(|e| e.ok());
+    if arr[0].contains("*") {
+        let paths = current_entries
+            .filter(|entry| {
+                entry.file_type().is_file()
+                    &&  entry.path().extension().and_then(OsStr::to_str) == Some(arr[1])
+            });
+        for entry in paths {
+            // * instead of retuning we need to parse it and do the search on it+
+            let mut tokenized_output = Tokenizer::new();
+            let content = fs::read_to_string(entry.path()).unwrap_or("".to_string());
+            tokenized_output.tokenize(content.as_str());
 
-/* fn search_file(file_name : &str) -> Option<PathBuf> {
-  let workflow = env::current_dir().unwrap();
-  let arr = file_name.split(".");
+            for token in tokenized_output.tokens {
+                println!("the tokens is {}, the id of is {}", token.1, token.0);
+            }
+        }
+    } else {
+        let target_path = current_entries
+            .find(|entry| {
+                entry.file_type().is_file()
+                    && entry.path().extension().and_then(OsStr::to_str) == Some(arr[1])
+            });
+        if let Some(entry) = target_path {
+            let mut tokenized_output = Tokenizer::new();
+            let content = fs::read_to_string(entry.path()).unwrap_or("".to_string());
+            tokenized_output.tokenize(content.as_str());
 
-
-
-  let entry = WalkDir::new(&workflow)
-              .into_iter()
-              .find(|e| e.unwrap().file_name().to_str().unwrap() == file_name);
-
-  if let Some(entry) = entry {
-    return Some(entry.unwrap().path().to_path_buf())
-  } else {
-    None
-  }
-
-
+            for token in tokenized_output.tokens {
+                println!("the tokens is {}, the id of is {}", token.1, token.0);
+            }
+        }
+    }
 }
 
-fn file_content_parsed<'a>(file_name:&str) -> Tokenizer<'a> {
-  let path = search_file(file_name);
-  if let Some(path) = path {
-    let mut tokenized_output = Tokenizer::new();
-    let content = fs::read_to_string(&path).unwrap_or("".to_string());
-    if !content.is_empty() {
-      tokenized_output.tokenize(content.as_str());
-    }
-
-    tokenized_output
-  } else {
-    Tokenizer::new()
-  }
-} */
+pub fn file_content_parsed<'a>(file_name: &str) {
+    search_file(file_name);
+}

@@ -15,7 +15,7 @@ type Token<'a> = (String, &'a str);
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Tokenizer<'a> {
-    tokens: HashMap<usize, &'a str>,
+    pub tokens: HashMap<usize, &'a str>,
 }
 
 impl<'a> Tokenizer<'a> {
@@ -28,8 +28,10 @@ impl<'a> Tokenizer<'a> {
     pub fn tokenize(&mut self, content: &'a str) -> Self {
         let content = content.split("\n").collect::<Vec<_>>().into_iter();
 
-        for (line_id , line_content) in content.enumerate() {
-            self.tokens.insert(line_id, line_content);
+        for (line_id, line_content) in content.enumerate() {
+            if !line_content.is_empty() {
+                self.tokens.insert(line_id, line_content);
+            }
         }
 
         self.clone()
