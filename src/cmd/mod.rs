@@ -4,7 +4,7 @@
 use regex::Regex;
 use std::process;
 
-use crate::core::file_content_parsed;
+use crate::core::{file_content_parse, file_content_parsed};
 
 pub mod parser;
 
@@ -61,6 +61,9 @@ impl Args {
     }
 
     fn executer(&self) {
-        file_content_parsed(&self.file.clone().unwrap())
+        match &self.file {
+            Some(file_name) => file_content_parsed(&file_name),
+            None => file_content_parse(),
+        }
     }
 }

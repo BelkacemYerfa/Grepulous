@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, process};
 
 use super::{Args, Flags};
 
@@ -11,7 +11,8 @@ pub fn cmd_parser() -> Args {
 
     if args.len() < 1 {
         // * the needed arg is the pattern
-        eprintln!("ERROR: we need at least 1 arg")
+        eprintln!("ERROR: we need at least 1 arg");
+        process::exit(2)
     }
 
     let mut formatted_args = Args::new();

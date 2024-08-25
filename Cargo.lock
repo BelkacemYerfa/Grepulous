@@ -7,8 +7,6 @@ name = "Grepulous"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "arger",
- "arger_derive",
  "bytes",
  "regex",
  "thiserror",
@@ -29,18 +27,6 @@ name = "anyhow"
 version = "1.0.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2cb2f989d18dd141ab8ae82f64d1a8cdd37e0840f73a406896cf5e99502fab61"
-
-[[package]]
-name = "arger"
-version = "0.1.0"
-dependencies = [
- "quote",
- "syn 2.0.75",
-]
-
-[[package]]
-name = "arger_derive"
-version = "0.1.0"
 
 [[package]]
 name = "bytes"
@@ -122,17 +108,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "syn"
-version = "2.0.75"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6af063034fc1935ede7be0122941bafa9bacb949334d090b77ca98b5817c7d9"
-dependencies = [
- "proc-macro2",
- "quote",
- "unicode-ident",
-]
-
-[[package]]
 name = "thiserror"
 version = "1.0.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -149,7 +124,7 @@ checksum = "1fb327af4685e4d03fa8cbcf1716380da910eeb2bb8be417e7f9fd3fb164f36f"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 1.0.48",
+ "syn",
 ]
 
 [[package]]
