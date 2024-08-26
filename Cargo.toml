@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.68"                                # error handling
 bytes = "1.3.0"                                  # helps manage buffers
+ignore = "0.4.22"
 regex = "1.10.6"
 thiserror = "1.0.38"                             # error handling
 walkdir = "2.5.0"

@@ -1,40 +1,24 @@
-[![progress-banner](https://backend.codecrafters.io/progress/grep/4d3e590e-c235-405e-b885-9837788eaeb9)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+## Grepulous
 
-This is a starting point for Rust solutions to the
-["Build Your Own grep" Challenge](https://app.codecrafters.io/courses/grep/overview).
+It is an attempt to make a grep like command but with some new power
 
-[Regular expressions](https://en.wikipedia.org/wiki/Regular_expression)
-(Regexes, for short) are patterns used to match character combinations in
-strings. [`grep`](https://en.wikipedia.org/wiki/Grep) is a CLI tool for
-searching using Regexes.
+## Features
 
-In this challenge you'll build your own implementation of `grep`. Along the way
-we'll learn about Regex syntax, how parsers/lexers work, and how regular
-expressions are evaluated.
+- [ ] Support for basic grep commands:
+   - [ ] Insensitive case
+   - [ ] Count case
+   - [ ] Inverted case
+   - [ ] Line Number case
+   - [ ] Custom regex case
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+- [ ] Get the output of pattern searching
 
-# Passing the first stage
 
-The entry point for your `grep` implementation is in `src/main.rs`. Study and
-uncomment the relevant code, and push your changes to pass the first stage:
 
-```sh
-git add .
-git commit -m "pass 1st stage" # any msg
-git push origin master
-```
+## Upcoming features
+ 
+- [ ] have a custom ui like fzf:
+      - [ ] Searching for a file
+      - [ ] Getting into the block of u're searching pattern
+      - [ ] Be able to edit it
 
-Time to move on to the next stage!
-
-# Stage 2 & beyond
-
-Note: This section is for stages 2 and beyond.
-
-1. Ensure you have `cargo (1.62)` installed locally
-1. Run `./your_program.sh` to run your program, which is implemented in
-   `src/main.rs`. This command compiles your Rust project, so it might be slow
-   the first time you run it. Subsequent runs will be fast.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.

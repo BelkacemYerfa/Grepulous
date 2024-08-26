@@ -1,4 +1,7 @@
+use std::env;
+
 use cmd::parser::cmd_parser;
+use ignore::WalkBuilder;
 
 mod cmd;
 mod core;

@@ -1,101 +1,27 @@
-use std::{collections::HashMap, env, ffi::OsStr, fs};
+use std::{collections::HashMap, env, ffi::OsStr, fs, path::{Path, PathBuf}, process};
 
 use ast::Tokenizer;
-use walkdir::{DirEntry, WalkDir};
+use ignore::WalkBuilder;
+use walkdir::{DirEntry};
 
 pub mod action;
 pub mod ast;
 pub mod ui;
 
-fn ignore_files(entry: &DirEntry, files_to_ignore: &Vec<String>) {}
-
-fn search_file(file_name: &str) {
-    let workflow = env::current_dir().unwrap();
-    let arr = file_name.split(".").collect::<Vec<&str>>();
-    let mut current_entries = WalkDir::new(&workflow).into_iter().filter_map(|e| e.ok());
-    if arr[0].contains("*") {
-        let paths = current_entries.filter(|entry| {
-            entry.file_type().is_file()
-                && entry.path().extension().and_then(OsStr::to_str) == Some(arr[1])
-        });
-        for entry in paths {
-            // * instead of retuning we need to parse it and do the search on it
-            let mut tokenized_output = Tokenizer::new();
-            let content = fs::read_to_string(entry.path()).unwrap_or("".to_string());
-            tokenized_output.tokenize(content.as_str());
-
-            /*  for token in tokenized_output.tokens {
-                println!("the tokens is {}, the id of is {}", token.1, token.0);
-            } */
-        }
-    } else {
-        let target_path = current_entries.find(|entry| {
-            entry.file_type().is_file()
-                && entry.path().extension().and_then(OsStr::to_str) == Some(arr[1])
-        });
-        if let Some(entry) = target_path {
-            let mut tokenized_output = Tokenizer::new();
-            let content = fs::read_to_string(entry.path()).unwrap_or("".to_string());
-            tokenized_output.tokenize(content.as_str());
-
-            /* for token in tokenized_output.tokens {
-                println!("the tokens is {}, the id of is {}", token.1, token.0);
-            } */
-        }
-    }
-}
 
 pub fn file_content_parsed<'a>(file_name: &str) {
-    search_file(file_name);
+    FilteringResults::new().update_self_based_search(file_name);
+
 }
 
 // * ignore files inside of the gitignore stuff
 pub fn file_content_parse() {
-    let workflow = env::current_dir().unwrap();
-    let files_to_ignore = get_files_to_ignore();
-
-    let current_entries = WalkDir::new(&workflow).into_iter().filter_map(|e| e.ok());
-    let paths = current_entries.filter(|entry| entry.file_type().is_file());
-    for entry in paths {
-        // * instead of retuning we need to parse it and do the search on it+
-        let mut tokenized_output = Tokenizer::new();
-        let content = fs::read_to_string(entry.path()).unwrap_or("".to_string());
-        tokenized_output.tokenize(content.as_str());
-        /* for token in tokenized_output.tokens {
-            println!("the tokens is {}, the id of is {}", token.1, token.0);
-        } */
-    }
+    FilteringResults::new().filter_git_gitignore(
+        &env::current_dir().unwrap()
+    );
 }
 
-/// get all the files in the gitignore file
-fn get_files_to_ignore() -> Vec<String> {
-    let workflow = env::current_dir().unwrap();
-    let git_ignore = WalkDir::new(&workflow)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .find(|entry| {
-            entry.file_type().is_file()
-                && entry.path().file_name().and_then(OsStr::to_str) == Some(".gitignore")
-        });
-
-
-    let mut tokenized_output = Tokenizer::new();
-    if let Some(git_ignore) = git_ignore {
-        let content = fs::read_to_string(&git_ignore.path()).unwrap_or("".to_string());
-        tokenized_output.tokenize(&content);
-        return tokenized_output
-            .tokens
-            .iter()
-            .map(|e| e.1.to_string())
-            .collect();
-    } else {
-        return tokenized_output
-            .tokens
-            .iter()
-            .map(|e| e.1.to_string())
-            .collect();
-    }
-}
+type IgnoreDirEntry = DirEntry;
 
 /*
  * approach to take after getting the file of the gitignore
@@ -105,12 +31,13 @@ fn get_files_to_ignore() -> Vec<String> {
  * 4 - get the files from them and tokenize them , and start the search
 */
 
-struct GitIgnore<'a> {
-    files: Vec<&'a str>,
-    dirs: Vec<&'a str>,
+#[derive(Debug,Clone,PartialEq)]
+struct FilteringResults {
+    files: Vec<String>, // ? files to search in for the provided pattern by the user
+    dirs: Vec<String>, // ? to be used for some ui stuff
 }
 
-impl<'a> GitIgnore<'a> {
+impl FilteringResults {
     fn new() -> Self {
         Self {
             files: Vec::new(),
@@ -118,56 +45,83 @@ impl<'a> GitIgnore<'a> {
         }
     }
 
-    fn get_files(&self) -> Vec<&'a str> {
+    fn get_files(&self) -> Vec<String> {
         self.files.clone()
     }
 
-    fn get_dirs(&self) -> Vec<&'a str> {
+    fn get_dirs(&self) -> Vec<String> {
         self.dirs.clone()
     }
 
-    fn get_gitignore(&self) -> Vec<String> {
-        let workflow = env::current_dir().unwrap();
-        let git_ignore = WalkDir::new(&workflow)
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .find(|entry| {
-                entry.file_type().is_file()
-                    && entry.path().file_name().and_then(OsStr::to_str) == Some(".gitignore")
-            });
+    fn reset_self(&mut self) {
+        self.files = vec![];
+        self.dirs = vec![];
+    }
 
-        let mut tokenized_output = Tokenizer::new();
-        if let Some(git_ignore) = git_ignore {
-            let content = fs::read_to_string(&git_ignore.path()).unwrap_or("".to_string());
-            tokenized_output.tokenize(&content);
-            return tokenized_output
-                .tokens
-                .iter()
-                .map(|e| e.1.to_string())
-                .collect();
-        } else {
-            return tokenized_output
-                .tokens
-                .iter()
-                .map(|e| e.1.to_string())
-                .collect();
+    fn filter_git_gitignore(&mut self, root: &Path) {
+        // Create a WalkBuilder
+        let walker = WalkBuilder::new(root)
+            .git_ignore(true)    // Use .gitignore files
+            .git_global(false)   // Don't use global gitignore (.ignore files)
+            .git_exclude(false)  // Don't use .git/info/
+            .build();
+
+        // Iterate over the entries
+        for result in walker {
+            match result {
+                Ok(entry) => {
+                    let file_name = entry.file_name().to_string_lossy().to_string();
+                    if entry.path().is_file() {
+                        self.files.push(file_name)
+                    } else if entry.path().is_dir() {
+                        self.dirs.push(file_name)
+                    }
+                },
+                Err(err) => eprintln!("ERROR: {}", err),
+            }
         }
     }
 
-    fn clean_gitignore_content(&self) -> Vec<String> {
-        let mut results = self.get_gitignore();
 
-        if results.is_empty() {
-            return results;
+    fn get_filtered_files(&self , file_name: &str) -> Vec<String> {
+        let mut files = vec![];
+
+        let file_comps = file_name.split(".").collect::<Vec<_>>();
+        let extension = file_comps.last();
+
+        for file in self.files.clone() {
+            if file_name.starts_with("*") {
+                if file.split(".").last() == Some(&extension.unwrap()) {
+                    files.push(file)
+                }
+            } else {
+                if file == file_name {
+                    files.push(file)
+                }
+            }
         }
 
-        let cleaning = |e : &String| {
-            e.starts_with("#") || e.trim().is_empty()
-        };
-
-        results.retain(|e| !cleaning(e));
-        results.into_iter().map(|e| e.trim().to_string()).collect::<Vec<_>>()
+        files
     }
 
+    fn update_self_based_search(&mut self, pattern : &str) {
+        // * this is the result of searching for the file given by the user
+        let root = env::current_dir().unwrap();
+        self.filter_git_gitignore(&root);
+        // * fix it: main.rs (false)
+        let dir = PathBuf::from(pattern);
 
+        // ! change this later (this is only made for testing purposes)
+        if !dir.is_file() {
+            self.files = self.get_filtered_files(pattern)
+        } else if dir.is_dir() {
+            // * update the dirs
+            self.reset_self();
+            // * update the files on where to search
+            let root = env::current_dir().unwrap().join(&dir);
+            self.filter_git_gitignore(&root);
+        }
+
+        println!("the new results are {:#?}", self);
+    }
 }
