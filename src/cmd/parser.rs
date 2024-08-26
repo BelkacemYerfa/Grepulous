@@ -21,8 +21,6 @@ pub fn cmd_parser() -> Args {
     formatted_args.set_pattern(args.next().unwrap_or_default());
     formatted_args.set_file(args.next());
 
-    println!("the formatted args {:?}", formatted_args);
-
     formatted_args.executer();
     formatted_args
 }

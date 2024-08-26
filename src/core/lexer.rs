@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 /// This contains the matched results from the file content
 struct Matched<'a>(Vec<&'a str>);
@@ -15,13 +15,13 @@ type Token<'a> = (String, &'a str);
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Tokenizer<'a> {
-    pub tokens: HashMap<usize, &'a str>,
+    pub tokens: IndexMap<usize, &'a str>,
 }
 
 impl<'a> Tokenizer<'a> {
     pub fn new() -> Self {
         Self {
-            tokens: HashMap::new(),
+            tokens: IndexMap::new(),
         }
     }
 
@@ -29,8 +29,8 @@ impl<'a> Tokenizer<'a> {
         let content = content.split("\n").collect::<Vec<_>>().into_iter();
 
         for (line_id, line_content) in content.enumerate() {
-            if !line_content.is_empty() {
-                self.tokens.insert(line_id, line_content);
+            if !line_content.trim().is_empty() {
+                self.tokens.insert(line_id, line_content.trim());
             }
         }
 

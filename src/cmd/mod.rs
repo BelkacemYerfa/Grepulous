@@ -48,22 +48,25 @@ impl Args {
         self.clone()
     }
 
-    fn validate_pattern(&self) {
+    fn validate_pattern(&self) -> regex::Regex {
         // * validate if the regex pattern is valid or not
         let regex = Regex::new(&self.pattern);
         match regex {
             Err(err) => {
-                println!("This is a bad regex to begin with {:#?}", err);
+                eprintln!("This is a bad regex");
+                eprintln!("{:#?}", err);
                 process::exit(1)
             }
-            _ => {}
+            Ok(regex) => {
+                regex
+            }
         }
     }
 
     fn executer(&self) {
         match &self.file {
-            Some(file_name) => file_content_parsed(&file_name),
-            None => file_content_parse(),
+            Some(file_name) => file_content_parsed(&file_name , self.validate_pattern()),
+            None => file_content_parse(self.validate_pattern()),
         }
     }
 }
