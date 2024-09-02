@@ -91,11 +91,12 @@ impl FilteringResults {
         self.filter_git_gitignore(&root);
         // * fix it: main.rs (false)
         let dir = PathBuf::from(pattern);
+        let extension = dir.extension();
 
-        // ! change this later (this is only made for testing purposes)
-        if dir.is_file() {
+        if let Some(_) = extension {
+            // * having an extension means the current file is a file
             self.0 = self.get_filtered_files(pattern)
-        } else if dir.is_dir() {
+        } else {
             // * update the dirs
             self.reset_self();
             // * update the files on where to search
