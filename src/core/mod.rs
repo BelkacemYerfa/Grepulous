@@ -2,12 +2,11 @@ use std::{
     env, ffi::OsStr, fs, path::{Path, PathBuf}
 };
 
+use colored::{Color, Colorize};
 use lexer::Tokenizer;
 use ignore::WalkBuilder;
 
-pub mod action;
-pub mod lexer;
-pub mod ui;
+mod lexer;
 
 /*
  * approach to take after getting the file of the gitignore
@@ -118,12 +117,18 @@ pub fn file_content_parsed(file_name: &str, pattern : regex::Regex) {
         let mut once = false;
         for line in tokenizer.tokens {
             if pattern.is_match(line.1) {
+                let results = pattern.find(line.1).map(|m| m.as_str()).unwrap();
                 if !once {
-                    println!("----");
-                    println!("file: {:?}", file.file_path);
+                    println!("");
+                    let current_dir = env::current_dir().unwrap();
+                    let root = current_dir.to_str().unwrap();
+                    let formatted_path = file.file_path.as_os_str().to_str().unwrap().replace(&((root.to_string() + "\\")), "").color(Color::BrightBlue);
+                    println!("{}", formatted_path);
                 }
                 once = true;
-                println!("{}: {}", line.0 , line.1);
+                let new_line = line.1.replace(results , &results.color(Color::Red).to_string());
+                let index = line.0.to_string().color(Color::BrightGreen);
+                println!("{}: {}", index , new_line);
             }
         }
     }
@@ -142,12 +147,18 @@ pub fn file_content_parse(pattern : regex::Regex) {
         let mut once = false;
         for line in tokenizer.tokens {
             if pattern.is_match(line.1) {
+                let results = pattern.find(line.1).map(|m| m.as_str()).unwrap();
                 if !once {
-                    println!("----");
-                    println!("file: {:?}", file.file_path);
+                    println!("");
+                    let current_dir = env::current_dir().unwrap();
+                    let root = current_dir.to_str().unwrap();
+                    let formatted_path = file.file_path.as_os_str().to_str().unwrap().replace(root, "").replacen("\\", "" , 1).color(Color::BrightBlue);
+                    println!("{}", formatted_path);
                 }
                 once = true;
-                println!("{}: {}", line.0 , line.1);
+                let new_line = line.1.replace(results , &results.color(Color::Red).to_string());
+                let index = line.0.to_string().color(Color::BrightGreen);
+                println!("{}: {}", index , new_line);
             }
         }
     }

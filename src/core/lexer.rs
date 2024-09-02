@@ -1,16 +1,5 @@
 use indexmap::IndexMap;
 
-/// This contains the matched results from the file content
-struct Matched<'a>(Vec<&'a str>);
-
-/// MetaData if the line that matched the regex pattern provided
-struct MetaData<'a> {
-    project: &'a str,
-    file_name: &'a str,
-    lang: &'a str,
-    matched: Matched<'a>,
-}
-
 type Token<'a> = (String, &'a str);
 
 #[derive(Debug, Clone, PartialEq)]
@@ -30,7 +19,7 @@ impl<'a> Tokenizer<'a> {
 
         for (line_id, line_content) in content.enumerate() {
             if !line_content.trim().is_empty() {
-                self.tokens.insert(line_id, line_content.trim());
+                self.tokens.insert(line_id, line_content);
             }
         }
 
